@@ -27,7 +27,10 @@ fluidPage(
         # Application title
         titlePanel("Primer Aplicativo Shiny"),
         h2("Histograma"),
-        h3('Pendiente'),
+        h3('Carga de Datos'),
+        fileInput("data","cargue sus datos:", accept = c(".txt",".csv", ".xlsx")),
+        h3("Resumen de los datos cargados"),
+        tableOutput("resumen_datos"),
         h4('Aun no definido'),
         sidebarLayout(
             sidebarPanel(
@@ -75,6 +78,11 @@ fluidPage(
             width =6
         ),
         downloadButton("download1"),
+        br(),
+        br(),
+        br(),
+        br(),
+        h5("Derechos reservados")
         )
 
             ),

@@ -1,0 +1,12 @@
+name: Demo
+title: Demo
+username: syogf3-mateo-c0rdenas
+account: syogf3-mateo-c0rdenas
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 18177853
+bundleId: 12690109
+url: https://syogf3-mateo-c0rdenas.shinyapps.io/Demo/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

@@ -9,6 +9,8 @@
 
 library(shiny)
 library(kableExtra)
+library(openxlsx)
+
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
@@ -49,5 +51,21 @@ function(input, output, session) {
             write.xlsx(faithful, file)
         }
     )
+
+    DATOS <- reactive({
+        req(input$data)
+      
+        readxl::read_excel(
+            path = input$data$datapath,
+            sheet = 1,
+        )
+    })
+    output$resumen_datos <- function(){
+        res <- summary(DATOS())
+        #personalizacion
+        kbl(res)|>
+            kable_styling("hover",full_width = TRUE, bootstrap_options = c("condensed"), font_size = 15) |> 
+            row_spec(0, color = "white", background = "#F54927", font_size = 14) 
+    }
 }
 
