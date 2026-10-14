@@ -1,0 +1,169 @@
+---
+title: "Tema N: [Nombre del tema]"
+subtitle: "[Nombre del módulo / curso]"
+author: "[Tu nombre]"
+date: last-modified
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(reticulate)
+# Si usas un entorno virtual/conda específico para Python, descomenta y ajusta:
+# use_virtualenv("r-reticulate", required = TRUE)
+```
+
+## Motivación {.unnumbered}
+
+::: {.motivacion}
+**¿Por qué nos importa esto?**
+
+[Plantea aquí una situación real, un dato curioso o un problema concreto que
+el estudiante pueda reconocer, y que solo se resuelve entendiendo el tema.
+2-4 líneas, tono cercano, sin fórmulas todavía.]
+:::
+
+## Objetivos de aprendizaje
+
+Al finalizar este tema, el estudiante será capaz de:
+
+- [Objetivo 1]
+- [Objetivo 2]
+- [Objetivo 3]
+
+## Revisión teórica
+
+::: {.teoria}
+### [Subtítulo del concepto]
+
+[Desarrollo teórico: definiciones, notación, fórmulas en LaTeX ($...$ o
+$$...$$), propiedades. Usa listas, negritas y ecuaciones numeradas si aplica.]
+
+$$
+f(x) = \dots
+$$
+:::
+
+### Ilustración con código
+
+Un mismo cálculo/gráfico, mostrado en R y en Python para que cada estudiante
+lo siga en el lenguaje con el que se sienta más cómodo.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: teoria-ejemplo-r
+
+# Ejemplo ilustrativo en R
+x <- 1:10
+y <- x^2
+plot(x, y, type = "b", main = "Ejemplo ilustrativo")
+```
+
+## Python
+
+```{python}
+#| label: teoria-ejemplo-py
+
+# Ejemplo ilustrativo en Python
+import matplotlib.pyplot as plt
+
+x = list(range(1, 11))
+y = [v**2 for v in x]
+
+plt.plot(x, y, marker="o")
+plt.title("Ejemplo ilustrativo")
+plt.show()
+```
+:::
+
+## Ejercicios resueltos
+
+::: {.ejercicio-resuelto}
+### Ejercicio resuelto 1
+
+**Enunciado:** [Enunciado completo del ejercicio.]
+
+**Solución razonada:**
+
+[Explica el razonamiento paso a paso ANTES o ENTRE los bloques de código,
+no solo el código.]
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: resuelto1-r
+
+# Paso 1: ...
+
+# Paso 2: ...
+
+# Resultado
+```
+
+## Python
+
+```{python}
+#| label: resuelto1-py
+
+# Paso 1: ...
+
+# Paso 2: ...
+
+# Resultado
+```
+:::
+
+**Interpretación del resultado:** [1-2 líneas conectando el resultado con el
+enunciado/motivación inicial.]
+:::
+
+<!-- Duplica el bloque anterior para cada ejercicio resuelto adicional -->
+
+## Ejercicios propuestos
+
+::: {.ejercicio-propuesto}
+### Ejercicio propuesto 1
+
+**Enunciado:** [Enunciado completo, con datos o valores concretos.]
+
+**Pistas (opcional):** [Sugerencia breve sin dar la solución.]
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: propuesto1-r
+#| eval: false
+
+# Completa aquí tu solución en R
+
+```
+
+## Python
+
+```{python}
+#| label: propuesto1-py
+#| eval: false
+
+# Completa aquí tu solución en Python
+
+```
+:::
+:::
+
+<!-- Duplica el bloque anterior para cada ejercicio propuesto adicional -->
+
+## Resumen del tema
+
+- [Idea clave 1]
+- [Idea clave 2]
+- [Idea clave 3]
+
+## Referencias
+
+- [Referencia 1]
+- [Referencia 2]

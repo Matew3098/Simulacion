@@ -1,0 +1,102 @@
+---
+title: "Módulo de IA y Programación"
+subtitle: "Presentación y evaluación"
+title-slide-attributes:
+  data-background-size: contain
+  data-background-opacity: "0.40"
+author: "Diego Paúl Huaraca Shagñay"
+affiliation: EPN -- PUCE
+lang: es
+format: 
+  revealjs:
+    embed-resources: true
+    css: styles.css
+    theme: [default]
+    chalkboard: false
+    multiplex: false
+    menu:
+      side: left
+      width: normal
+    footer: "[<strong>Curso Nivelatorio</strong>](...)"
+    slide-number: c/t
+execute:
+  echo: true
+---
+
+## ¡Hola a todos!
+
+::: columns
+::: {.column width="20%"}
+![](imgs/me.jpeg)
+:::
+
+::: {.column width="80%"}
+::: incremental
+-   [**Diego Paúl Huaraca Shagñay**]{.hl-purple}
+
+-   Ingeniero Matemático. [**Escuela Politécnica Nacional**]{.hl-yellow} (2013).
+
+-   Máster en Ciencias Actuariales y Financieras. [**Universidad de Alcalá**]{.hl-yellow} (2018).
+
+-   Consultor Analítico de Riesgo Financiero. [**BI-SCIENCES**]{.hl-green} (desde 2018).
+
+-   Docente del Departamento de Matemática. [**Escuela Politécnica Nacional**]{.hl-green} (desde 2018).
+
+-   Consultor Actuarial. [**Superintendencia de Bancos**]{.hl-green} (desde 2022).
+
+-   Socio Fundador de [**Tactary Consultoría Actuarial**]{.hl-green} (desde 2022).
+:::
+:::
+:::
+
+---
+
+
+## Contenido del curso
+<!-- Segunda Parte -->
+::: columns
+::: {.column width="20%"}
+![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPKIAIbhuhpU6GMjL2jBdHycULZOCEVt-XWs9Z_b0elEikNTefOLW3yk2ajknsTLsMDo4&usqp=CAU)
+:::
+
+::: {.column width="80%"}
+::: incremental
+-   [**Introducción a la programación con R y Python**]{.hl-red}
+
+-   [**Limpieza y visualización de datos con R y Python**]{.hl-yellow}
+
+-   [**Automatización de distribuciones con R y Python**]{.hl-red}
+
+-   [**Aplicaciones en Banca y Seguros**]{.hl-yellow}
+
+:::
+:::
+:::
+
+## Actividades de evaluación
+
+<!-- Primera parte -->
+::: columns
+::: {.column width="20%"}
+![](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPKIAIbhuhpU6GMjL2jBdHycULZOCEVt-XWs9Z_b0elEikNTefOLW3yk2ajknsTLsMDo4&usqp=CAU)
+:::
+
+::: {.column width="80%"}
+::: incremental
+-   [**Ejercicios propuestos**]{.hl-red} → `{Actividad Grupal - 3 integrantes}` → 30%.
+
+    **Fecha límite de entrega:** Domingo 20 de septiembre, 23:59 hrs.
+
+-   [**Informe Estadístico**]{.hl-red} → `{Actividad Grupal - 3 integrantes}` → 30%.
+
+    **Fecha límite de entrega:** Miércoles 23 de septiembre, 18:00 hrs.
+
+-   [**Examen final**]{.hl-yellow}  → `{Actividad individual}` → 40%.
+
+    **Fecha:** Martes 22 de septiembre. La evaluación se habilitará en el aula virtual del curso en el horario de 18:00 a 22:00. (La evaluación tiene una duración de 60 minutos).
+
+:::
+:::
+:::
+
+# ¡GRACIAS!

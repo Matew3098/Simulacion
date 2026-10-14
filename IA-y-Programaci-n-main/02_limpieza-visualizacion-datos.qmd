@@ -1,0 +1,919 @@
+---
+title: "Tema 2: Limpieza y visualización de datos con R y Python"
+subtitle: "IA y Programación"
+lang: es
+author: "Diego Huaraca"
+date: last-modified
+format: 
+  live-html:
+    #embed-resources: true
+    css: styles.css
+    toc: true
+    toc-title: "Contenidos" 
+    toc-depth: 3
+    toc-location: left
+    include-in-header:
+      text: |
+        <style>
+          .logos-auspiciantes {
+            position: absolute;
+            top: 25px;
+            right: 220;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+          }
+          .logos-auspiciantes img {
+            max-height: 50px;
+            width: auto;
+          }
+        </style>
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(reticulate)
+
+# --- Autoinstalación de paquetes de R usados en este documento ---
+#paquetes_r <- c("stringr", "lubridate", "dplyr", "tidyr", "ggplot2", "scales", "plotly")
+#faltantes_r <- paquetes_r[!sapply(paquetes_r, requireNamespace, quietly = TRUE)]
+#if (length(faltantes_r) > 0) install.packages(faltantes_r)
+#invisible(lapply(paquetes_r, library, character.only = TRUE))
+
+# --- Autoinstalación de módulos de Python usados en este documento ---
+#paquetes_py <- c("pandas", "numpy", "matplotlib", "seaborn", "plotly")
+#faltantes_py <- paquetes_py[!sapply(paquetes_py, py_module_available)]
+#if (length(faltantes_py) > 0) py_install(faltantes_py)
+```
+
+::: {.column-margin}
+::: {.logos-auspiciantes}
+![](imgs/epn.png)
+![](imgs/puce.png)
+:::
+:::
+
+## Motivación {.unnumbered}
+
+::: {.motivacion}
+**¿Por qué nos importa esto?**
+
+En la práctica, más del 70% del tiempo de un proyecto de datos se consume en **limpiar y preparar** la información. Por ejemplo: nombres mal escritos, fechas en formatos distintos, números guardados como texto, valores faltantes. Solo después de ese trabajo **invisible**** tiene sentido construir gráficos y modelos, por otro lado, un buen gráfico puede comunicar en segundos lo que una tabla de
+números tarda minutos en transmitir, o a su vez, puede engañar, si está mal construido. Este tema proporciona al estudiante herramientas para limpiar variables de texto, fecha y numéricas, y para construir visualizaciones de calidad profesional (estáticas y dinámicas) en R y en Python.
+:::
+
+## Objetivos de aprendizaje
+
+Al finalizar este tema, el estudiante será capaz de:
+
+- Limpiar y transformar variables de texto, fecha y numéricas en R y Python.
+- Construir gráficos estáticos de alta calidad para mostrar tendencia,
+  comparación y estructura de los datos.
+- Construir gráficos dinámicos (interactivos) con `plotly` en ambos
+  lenguajes.
+
+## Conjunto de datos
+
+Usaremos un mismo conjunto de datos simulado sobre ventas mensuales de una
+tienda a lo largo de todo el tema, para que cada técnica se vea aplicada
+sobre el mismo contexto.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: datos-ejemplo-r
+
+set.seed(123)
+
+fechas <- seq(as.Date("2025-01-01"), as.Date("2025-12-01"), by = "month")
+productos <- c("  laptop ", "MOUSE", "teclado", "Monitor ")
+
+ventas <- data.frame(
+  fecha = rep(fechas, each = 4),
+  producto = rep(productos, times = 12),
+  region = sample(c("Norte", "Sur", "Centro"), 48, replace = TRUE),
+  unidades = sample(5:60, 48, replace = TRUE),
+  precio_unitario = round(runif(48, 15, 900), 2)
+)
+
+head(ventas)
+dim(ventas)
+```
+
+## Python
+
+```{python}
+#| label: datos-ejemplo-py
+
+import numpy as np
+import pandas as pd
+
+np.random.seed(123)
+
+fechas = pd.date_range("2025-01-01", "2025-12-01", freq="MS")
+productos = ["  laptop ", "MOUSE", "teclado", "Monitor "]
+
+ventas = pd.DataFrame({
+    "fecha": np.repeat(fechas, 4),
+    "producto": productos * 12,
+    "region": np.random.choice(["Norte", "Sur", "Centro"], 48),
+    "unidades": np.random.randint(5, 60, 48),
+    "precio_unitario": np.round(np.random.uniform(15, 900, 48), 2)
+})
+
+ventas.head()
+ventas.shape
+```
+:::
+
+:::{.callout-morado .column-margin}
+A propósito los nombres de los productos tienen espacios y mayúsculas
+inconsistentes: así se ven los datos "crudos" en la vida real.
+:::
+
+## Tratamiento de variables de texto
+
+::: {.teoria}
+Las operaciones de texto más comunes son: quitar espacios sobrantes,
+unificar mayúsculas/minúsculas, detectar y reemplazar patrones (expresiones
+regulares), dividir cadenas y unirlas. En R, la librería `stringr`
+(funciones `str_*`) ofrece una sintaxis consistente; en Python se usan los
+métodos nativos de `str` o el accesor `.str` de pandas para trabajar
+columna a columna.
+:::
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: texto-r
+
+x <- "  Laptop Gamer  "
+
+str_trim(x)                     # quita espacios al inicio/fin
+str_to_lower(x)                 # minúsculas
+str_to_title(str_trim(x))       # formato título
+str_detect(x, "Gamer")          # ¿contiene el patrón?
+str_replace(x, "Gamer", "Pro")  # reemplaza el patrón
+str_split("R,Python,SQL", ",")  # divide una cadena
+
+# Aplicado a toda una columna del dataframe
+ventas$producto <- str_to_title(str_trim(ventas$producto))
+unique(ventas$producto)
+```
+
+## Python
+
+```{python}
+#| label: texto-py
+
+x = "  Laptop Gamer  "
+
+x.strip()                  # quita espacios al inicio/fin
+x.lower()                  # minúsculas
+x.strip().title()          # formato título
+"Gamer" in x               # ¿contiene el patrón?
+x.replace("Gamer", "Pro")  # reemplaza el patrón
+"R,Python,SQL".split(",")  # divide una cadena
+
+# Aplicado a toda una columna del DataFrame (accesor .str)
+ventas["producto"] = ventas["producto"].str.strip().str.title()
+ventas["producto"].unique()
+```
+:::
+
+[Guía rápida de stringr](./docs/stringr-cheat-sheet.pdf)
+
+
+## Tratamiento de variables de fecha
+
+::: {.teoria}
+Las fechas deben tratarse como un tipo de dato propio (no como texto) para
+poder hacer operaciones como extraer el año/mes, calcular diferencias entre
+fechas, o filtrar por rangos. En R se usa la librería `lubridate`; en
+Python, el tipo `datetime` nativo y el accesor `.dt` de pandas.
+:::
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: fechas-r
+
+f <- ymd("2025-03-15")   # convierte texto a fecha (año-mes-día)
+
+year(f); month(f); day(f); wday(f, label = TRUE)
+f + months(2)                       # aritmética de fechas
+as.numeric(today() - f)             # diferencia en días respecto a hoy
+
+# Aplicado a la columna del dataframe
+ventas$anio <- year(ventas$fecha)
+ventas$mes  <- month(ventas$fecha, label = TRUE, abbr = TRUE)
+head(ventas[, c("fecha", "anio", "mes")])
+```
+
+## Python
+
+```{python}
+#| label: fechas-py
+
+f = pd.to_datetime("2025-03-15")
+
+f.year, f.month, f.day, f.day_name()
+f + pd.DateOffset(months=2)                         # aritmética de fechas
+(pd.Timestamp.today() - f).days                      # diferencia en días
+
+# Aplicado a la columna del DataFrame (accesor .dt)
+ventas["anio"] = ventas["fecha"].dt.year
+ventas["mes"]  = ventas["fecha"].dt.month_name().str.slice(0, 3)
+ventas[["fecha", "anio", "mes"]].head()
+```
+:::
+
+[Guía rápida de lubridate](./docs/lubridate-cheat-sheet.pdf)
+
+## Tratamiento de variables numéricas
+
+::: {.teoria}
+Con variables numéricas es común: redondear, formatear para lectura humana
+(separadores de miles, símbolos de moneda/porcentaje), detectar valores
+faltantes (`NA`/`NaN`), crear flags y valores atípicos.
+:::
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: numeros-r
+
+n <- 12345.67891
+
+round(n, 2)
+format(n, big.mark = ",", scientific = FALSE)
+scales::dollar(n)
+scales::percent(0.256, accuracy = 0.1)
+
+# Valores faltantes
+v <- c(10, NA, 18, NA, 20)
+sum(is.na(v))                # cuántos faltantes hay
+v[is.na(v)] <- mean(v, na.rm = TRUE)  # imputar con la media
+v
+```
+
+## Python
+
+```{python}
+#| label: numeros-py
+
+n = 1234567.891
+
+round(n, 1)
+f"{n:,.0f}"
+f"${n:,.2f}"
+f"{0.256:.1%}"
+
+# Valores faltantes
+v = pd.Series([10, np.nan, 18, np.nan, 20])
+v.isna().sum()                       # cuántos faltantes hay
+v = v.fillna(v.mean())               # imputar con la media
+v
+```
+:::
+
+### Ejercicios resueltos
+
+::: {.ejercicio-resuelto}
+
+**Ejemplo 1:** A partir del dataframe `ventas`, crear una columna
+`ingreso = unidades * precio_unitario`, formatear el ingreso total del año
+como moneda (con separador de miles), y muestra en qué mes se registró el
+ingreso más alto.
+
+**Solución:** Primero se calcula la columna derivada `ingreso`
+(operación numérica vectorizada), luego se agrega por mes usando `mes` (ya
+extraído previamente de la fecha), y finalmente, se formatea el resultado
+para lectura.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: resuelto1-r
+
+ventas$ingreso <- ventas$unidades * ventas$precio_unitario
+
+ingreso_total <- sum(ventas$ingreso)
+cat("Ingreso total del año:", scales::dollar(ingreso_total), "\n")
+
+ingreso_por_mes <- aggregate(ingreso ~ mes, data = ventas, sum)
+mes_top <- ingreso_por_mes[which.max(ingreso_por_mes$ingreso), ]
+mes_top
+```
+
+## Python
+
+```{python}
+#| label: resuelto1-py
+
+ventas["ingreso"] = ventas["unidades"] * ventas["precio_unitario"]
+
+ingreso_total = ventas["ingreso"].sum()
+print(f"Ingreso total del año: ${ingreso_total:,.2f}")
+
+ingreso_por_mes = ventas.groupby("mes")["ingreso"].sum().reset_index()
+mes_top = ingreso_por_mes.loc[ingreso_por_mes["ingreso"].idxmax()]
+mes_top
+```
+:::
+
+**Interpretación del resultado:** Al separar primero la fecha en columnas
+como `mes`, agregar (sumar) por esa categoría se vuelve una operación
+directa de una sola línea, tanto con `aggregate()` en R como con
+`groupby()` en Python.
+:::
+
+### Ejercicios propuestos
+
+::: {.ejercicio-propuesto}
+
+**Ejercicio 1**: Sobre el dataframe `ventas`, se pide: 
+
+  a. Crear una columna de texto `producto_region` que combine el producto y la región en formato `"Producto (Región)"` y calcule el ingreso total por cada combinación; 
+  b. Crear una columna `trimestre` a partir de la fecha; 
+  c. Calcular qué porcentaje del ingreso total corresponde a la región "Norte".
+
+::: {.panel-tabset}
+## R
+```{webr}
+#| label: propuesto1-r
+
+# Completa aquí tu solución en R
+```
+
+## Python
+```{pyodide-python}
+#| label: propuesto1-py
+
+# Completa aquí tu solución en Python
+```
+:::
+:::
+
+### Operadores Pipes: |> vs. %>%
+
+::: {.teoria}
+El flujo de trabajo analítico en R se basa fundamentalmente en la **concatenación de transformaciones sucesivas** sobre conjuntos de datos. Para evitar la anidación excesiva de funciones o la creación de objetos intermedios **innecesarios**, se utilizan los operadores de tubería (pipes). Estos operadores toman el resultado del lado izquierdo y lo pasan como el primer argumento de la función ubicada en el lado derecho.
+
+En R existen dos implementaciones principales:
+
+  - El pipe nativo (`|>`): Introducido a partir de la versión 4.1.0. Es un operador integrado directamente en la sintaxis del lenguaje R (base), lo que elimina cualquier dependencia de paquetes externos y optimiza el rendimiento de ejecución.
+  - El pipe del paquete magrittr (`%>%`): Popularizado masivamente a través del ecosistema `tidyverse` (especialmente con `dplyr`).
+:::
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: pipe-r
+c(2,5,12,9,10,7,8) |> mean()
+c(2,5,12,9,10,7,8) %>% mean    # Permite omitir paréntesis de las funciones
+
+ventas |> head(3)
+ventas %>% head(3)
+```
+:::
+
+
+### Operaciones con los verbos de dplyr
+
+::: {.teoria}
+El paquete `dplyr` en R proporciona una gramática consistente para la manipulación de datos. Las transformaciones tabulares se estructuran mediante cinco verbos fundamentales que ejecutan acciones específicas sobre filas o columnas.
+:::
+
+:::{.callout-morado .column-margin}
+💡 **Tip:** La sintaxis equivalente en Python para cada uno de los verbos de `dplyr` en R se puede generar utilizando `polars`, que se alinea estrechamente con la filosofía de tuberías.
+:::
+
+#### `select()`: Selección y reordenamiento de columnas
+
+Permite aislar, reordenar o renombrar variables en una estructura tabular mediante su nombre explícito.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: select-r
+ventas |> select(fecha, region, precio_unitario) |> tail(, n=6)
+
+ventas |> select(-mes, -region) |> tail(, n=6)
+```
+
+## Python
+
+```{python}
+#| label: select-py
+ventas.loc[:, ["fecha", "region", "precio_unitario"]].tail(6)
+
+ventas.drop(columns=["mes", "region"]).tail(6)
+```
+:::
+
+### `filter()`: Filtrado de observaciones (filas)
+
+Filtra observaciones basadas en **condiciones lógicas o relacionales**. Conserva únicamente las filas donde la expresión dada evalúa a `TRUE`.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: filter-r
+ventas |> dplyr::filter(unidades > 50)
+
+ventas |> dplyr::filter(region == "Norte" & ingreso <= 5000)
+```
+
+## Python
+
+```{python}
+#| label: filter-py
+ventas.query("unidades > 50")
+
+ventas.query("region == 'Norte' and ingreso <= 5000")
+```
+:::
+
+### `mutate()`: Creación y transformación de variables
+
+Añade nuevas columnas o modifica las existentes **manteniendo la dimensión original** de filas. Opera de manera vectorizada fila por fila o sobre el vector completo.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: mutate-r
+ventas |> mutate(menos_10_unidades = ifelse(unidades < 10, "SI", "NO")) |> head(6)
+
+ventas |> mutate(ingreso = round(ingreso/1000, 2)) |> tail(6) # ingreso expresado en miles
+```
+
+## Python
+
+```{python}
+#| label: mutate-py
+ventas.assign(menos_10_unidades=np.where(ventas["unidades"] < 10, "SI", "NO")).head(6)
+
+ventas.assign(ingreso=(ventas["ingreso"] / 1000).round(2)).tail(6)
+```
+:::
+
+### `arrange()`: Ordenamiento de observaciones
+
+Reordena las filas según los valores **de una o más columnas**, de forma **ascendente** (por defecto) o descendente utilizando la función `desc()`.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: arrange-r
+ventas |> arrange(ingreso) |> head(10) # Top 10 en menos ventas
+
+ventas |> arrange(desc(ingreso)) |> head(10) # Top 10 en más ventas
+```
+
+## Python
+
+```{python}
+#| label: arrange-py
+ventas.sort_values(by="ingreso").head(10)
+
+ventas.sort_values(by="ingreso", ascending=False).head(10)
+```
+:::
+
+
+### `summarise()`: Agregación y resumen
+
+Consolida múltiples valores de un grupo completo a un único escalar descriptivo (como la media, desviación estándar o conteos). Generalmente se combina con la función `group_by()` para realizar agregaciones grupales.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: summarise-r
+ventas |> group_by(region) |> summarise(Total_Ingresos = sum(ingreso))
+
+ventas |> group_by(region, mes) |> summarise(Total_Ingresos = mean(ingreso), Num_Ventas = n()) |> head(8)
+```
+
+## Python
+
+```{python}
+#| label: summarise-py
+ventas.groupby(["region"], as_index=False).agg(
+    Total_Ingresos=("ingreso", "sum")
+).head(8)
+
+ventas.groupby(["region", "mes"], as_index=False).agg(
+    Total_Ingresos=("ingreso", "mean"),
+    Num_Ventas=("ingreso", "count")
+).head(8)
+```
+:::
+
+
+## Gráficos estáticos de alta calidad
+
+::: {.teoria}
+Un gráfico de **calidad profesional** no es solo el tipo de gráfico correcto:
+incluye título, etiquetas de ejes, una paleta de color intencional y
+elimina el ruido visual innecesario. En R se sugiere usar `ggplot2`; y en Python,
+`matplotlib`/`seaborn`. Se enlistan los tres propósitos principales de un gráfico y el tipo recomendado para cada uno:
+
+- **Tendencia**: cómo cambia una variable en el tiempo → gráfico de línea.
+- **Comparación**: cómo se comparan categorías entre sí → gráfico de barras
+  o boxplot.
+- **Estructura**: cómo se relacionan o distribuyen los datos → dispersión
+  (scatter) o histograma.
+:::
+
+[Guía rápida de ggplot2](./docs/data-visualization-sheet.pdf)
+
+[Guía rápida de seaborn](./docs/seaborn-sheet.pdf)
+
+### Gráfico de tendencia
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: tendencia-r
+head(ventas)
+
+ingreso_mensual <- aggregate(ingreso ~ fecha, data = ventas, sum)
+
+ggplot(ingreso_mensual, aes(x = fecha, y = ingreso)) +
+  geom_line(color = "#2C6E91", linewidth = 1.1) +
+  geom_point(color = "#2C6E91", size = 2) +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(
+    title = "Evolución del ingreso mensual",
+    subtitle = "Año 2024",
+    x = "Mes",
+    y = "Ingreso"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Python
+
+```{python}
+#| label: tendencia-py
+
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+
+ventas.head()
+ingreso_mensual = ventas.groupby("fecha")["ingreso"].sum().reset_index()
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+ax.plot(ingreso_mensual["fecha"], ingreso_mensual["ingreso"],
+        marker="o", color="#2C6E91", linewidth=2)
+
+ax.set_title("Evolución del ingreso mensual\nAño 2024")
+ax.set_xlabel("Mes")
+ax.set_ylabel("Ingreso")
+ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"${v:,.0f}"))
+fig.autofmt_xdate()
+plt.tight_layout()
+plt.show()
+```
+:::
+
+### Gráfico de comparación
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: comparacion-r
+head(ventas)
+ingreso_producto <- aggregate(ingreso ~ producto, data = ventas, sum)
+
+ggplot(ingreso_producto, aes(x = reorder(producto, ingreso), y = ingreso, fill = producto)) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::dollar) +
+  scale_fill_brewer(palette = "Blues") +
+  labs(
+    title = "Ingreso total por producto",
+    x = NULL,
+    y = "Ingreso"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Python
+
+```{python}
+#| label: comparacion-py
+
+import seaborn as sns
+ventas.head()
+ingreso_producto = (
+    ventas.groupby("producto")["ingreso"]
+    .sum()
+    .reset_index()
+    .sort_values("ingreso")
+)
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+sns.barplot(data=ingreso_producto, x="ingreso", y="producto",
+            hue="producto", palette="Blues", legend=False, ax=ax)
+
+ax.set_title("Ingreso total por producto")
+ax.set_xlabel("Ingreso")
+ax.set_ylabel("")
+ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"${v:,.0f}"))
+plt.tight_layout()
+plt.show()
+```
+:::
+
+### Gráfico de estructura
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: estructura-r
+
+ggplot(ventas, aes(x = precio_unitario, y = unidades, color = producto)) +
+  geom_point(size = 3, alpha = 0.8) +
+  scale_color_brewer(palette = "Dark2") +
+  labs(
+    title = "Relación entre precio y unidades vendidas",
+    x = "Precio unitario",
+    y = "Unidades vendidas",
+    color = "Producto"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Python
+
+```{python}
+#| label: estructura-py
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+sns.scatterplot(data=ventas, x="precio_unitario", y="unidades",
+                 hue="producto", palette="Dark2", s=80, alpha=0.8, ax=ax)
+
+ax.set_title("Relación entre precio y unidades vendidas")
+ax.set_xlabel("Precio unitario")
+ax.set_ylabel("Unidades vendidas")
+ax.legend(title="Producto")
+plt.tight_layout()
+plt.show()
+```
+:::
+
+### Ejercicios resueltos
+
+::: {.ejercicio-resuelto}
+
+**Ejemplo 2:** Construye un histograma de alta calidad que muestre la
+distribución del `ingreso` por transacción, con título, etiquetas de ejes y
+una línea vertical marcando el ingreso promedio.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: resuelto2-r
+head(ventas)
+promedio_ingreso <- mean(ventas$ingreso)
+
+ggplot(ventas, aes(x = ingreso)) +
+  geom_histogram(bins = 12, fill = "#2C6E91", color = "white") +
+  geom_vline(xintercept = promedio_ingreso, linetype = "dashed", color = "firebrick") +
+  scale_x_continuous(labels = scales::dollar) +
+  labs(
+    title = "Distribución del ingreso por transacción",
+    x = "Ingreso",
+    y = "Frecuencia"
+  ) +
+  theme_minimal(base_size = 12)
+```
+
+## Python
+
+```{python}
+#| label: resuelto2-py
+ventas.head()
+promedio_ingreso = ventas["ingreso"].mean()
+
+fig, ax = plt.subplots(figsize=(7, 4.5))
+sns.histplot(ventas["ingreso"], bins=12, color="#2C6E91", ax=ax)
+ax.axvline(promedio_ingreso, color="firebrick", linestyle="--")
+
+ax.set_title("Distribución del ingreso por transacción")
+ax.set_xlabel("Ingreso")
+ax.set_ylabel("Frecuencia")
+ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda v, _: f"${v:,.0f}"))
+plt.tight_layout()
+plt.show()
+```
+:::
+
+**Interpretación del resultado:** Añadir una referencia visual (la línea del
+promedio) sobre el histograma ayuda a que el lector ubique de inmediato si
+la mayoría de transacciones está por encima o por debajo de ese valor,
+sin tener que leer la cifra exacta.
+:::
+
+### Ejercicios propuestos
+
+::: {.ejercicio-propuesto}
+
+**Ejercicio 2**: A partir del dataframe `ventas`, se pide construir: 
+
+  (a) un gráfico de línea de la tendencia de unidades vendidas por mes (no de ingreso); 
+  (b) un boxplot que compare el ingreso por región; 
+  (c) un gráfico de dispersión de unidades vs. ingreso, coloreado por región.
+
+Cuide el título, etiquetas de ejes y paleta de color en los tres gráficos.
+
+::: {.panel-tabset}
+## R
+```{webr}
+#| label: propuesto2-r
+
+# Completa aquí tu solución en R
+```
+
+## Python
+```{pyodide-python}
+#| label: propuesto2-py
+
+# Completa aquí tu solución en Python
+```
+:::
+:::
+
+## Gráficos dinámicos
+
+::: {.teoria}
+Un gráfico dinámico (*interactivo*) permite explorar los datos **directamente
+en el navegador**: hacer zoom, pasar el mouse para ver valores exactos
+(*tooltip*), o activar/desactivar categorías desde la leyenda. Es
+especialmente útil en material que se publica como página web (como este
+documento en Moodle), donde el estudiante puede **interactuar con el
+gráfico** en lugar de ver solo una imagen estática. Se usa el paquete/librería `plotly` en
+ambos lenguajes.
+:::
+
+:::{.callout-morado .column-margin}
+Los gráficos interactivos no se pueden exportar a PDF, solo se pueden ver en HTML (navegador web).
+:::
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: dinamico-r
+head(ventas)
+grafico_estatico <- ggplot(ventas, aes(x = precio_unitario, y = unidades,
+                                        color = producto,
+                                        text = paste("Región:", region))) +
+  geom_point(size = 3, alpha = 0.8) +
+  labs(title = "Precio vs. unidades vendidas (interactivo)",
+       x = "Precio unitario", y = "Unidades vendidas") +
+  theme_minimal(base_size = 12)
+
+plotly::ggplotly(grafico_estatico, tooltip = c("x", "y", "text", "colour"))
+```
+
+## Python
+
+```{python}
+#| label: dinamico-py
+ventas.head()
+import plotly.express as px
+
+fig_dinamico = px.scatter(
+    ventas, x="precio_unitario", y="unidades",
+    color="producto", hover_data=["region"],
+    title="Precio vs. unidades vendidas (interactivo)",
+    labels={"precio_unitario": "Precio unitario", "unidades": "Unidades vendidas"}
+)
+fig_dinamico.update_layout(template="plotly_white")
+fig_dinamico.show()
+```
+:::
+
+:::{.callout-morado .column-margin}
+💡 **Tip:** En R, `plotly::ggplotly()` convierte automáticamente un gráfico de
+`ggplot2` ya construido en uno interactivo — no hay que rehacerlo desde
+cero. En Python, `plotly.express` construye el gráfico interactivo
+directamente, con una sintaxis muy similar a `seaborn`.
+:::
+
+
+### Ejercicios resueltos
+
+::: {.ejercicio-resuelto}
+
+**Ejercicio 3:** Convierta el gráfico de tendencia del ingreso mensual
+en una versión interactiva, mostrando en el *tooltip* el mes
+y el ingreso exacto.
+
+::: {.panel-tabset}
+## R
+
+```{r}
+#| label: resuelto3-r
+
+grafico_tendencia <- ggplot(ingreso_mensual, aes(x = fecha, y = ingreso)) +
+  geom_line(color = "#2C6E91") +
+  geom_point(color = "#2C6E91") +
+  labs(title = "Evolución del ingreso mensual", x = "Mes", y = "Ingreso") +
+  theme_minimal(base_size = 12)
+
+plotly::ggplotly(grafico_tendencia)
+```
+
+## Python
+
+```{python}
+#| label: resuelto3-py
+
+fig_tendencia = px.line(
+    ingreso_mensual, x="fecha", y="ingreso", markers=True,
+    title="Evolución del ingreso mensual",
+    labels={"fecha": "Mes", "ingreso": "Ingreso"}
+)
+fig_tendencia.update_layout(template="plotly_white")
+fig_tendencia.show()
+```
+:::
+
+**Interpretación del resultado:** Al pasar el mouse sobre cada punto se
+puede leer el valor exacto del ingreso de ese mes, algo que en la versión
+estática solo se podía estimar visualmente.
+:::
+
+### Ejercicios propuestos
+
+::: {.ejercicio-propuesto}
+
+**Ejercicio 3:** Construya un gráfico de barras interactivo del ingreso total por región,
+donde el *tooltip* muestre además el número de transacciones de esa
+región. (**Pista**: primero calcule ambas agregaciones suma de ingreso y
+conteo antes de graficar.)
+
+::: {.panel-tabset}
+## R
+```{webr}
+#| label: propuesto3-r
+#| eval: false
+
+# Completa aquí tu solución en R
+```
+
+## Python
+```{pyodide-python}
+#| label: propuesto3-py
+
+# Completa aquí tu solución en Python
+```
+:::
+:::
+
+## Resumen del tema
+
+- Antes de graficar, los datos deben limpiarse: texto sin espacios/formato
+  consistente, fechas como tipo `date`/`datetime` (no texto), y números
+  formateados y sin faltantes sin resolver.
+- `stringr` (R) y los métodos `.str` (Python) cubren las operaciones de
+  texto más comunes.
+- `lubridate` (R) y el accesor `.dt` (Python) permiten extraer y operar
+  componentes de fecha fácilmente.
+- Todo gráfico de calidad profesional necesita: título, etiquetas de eje,
+  paleta de color intencional y el tipo de gráfico adecuado al propósito
+  (tendencia → línea, comparación → barras/boxplot, estructura →
+  dispersión/histograma).
+- `plotly` permite convertir o construir gráficos interactivos en ambos
+  lenguajes, útil para material publicado en la web.
+
+## Referencias
+
+- Wickham, H. *ggplot2: Elegant Graphics for Data Analysis*. <https://ggplot2-book.org/>
+- Waskom, M. *seaborn: statistical data visualization*. <https://seaborn.pydata.org/>
+- Documentación de `stringr`: <https://stringr.tidyverse.org/>
+- Documentación de `lubridate`: <https://lubridate.tidyverse.org/>
+- Documentación de `plotly` para R: <https://plotly.com/r/>
+- Documentación de `plotly` para Python: <https://plotly.com/python/>
+- Documentación de `data.table` para R: <https://atrebas.github.io/post/2019-03-03-datatable-dplyr/>

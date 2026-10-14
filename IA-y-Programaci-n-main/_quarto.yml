@@ -1,0 +1,28 @@
+project:
+  type: default
+  render:
+    - "*.qmd"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    embed-resources: true   # genera UN solo .html autocontenido -> ideal para subir a Moodle
+    code-fold: show
+    code-tools: true
+    code-copy: true
+    smooth-scroll: true
+    css: styles.css
+    fig-width: 7
+    fig-height: 4.5
+
+execute:
+  echo: true
+  warning: false
+  message: false
+  freeze: auto   # cachea resultados de ejecución para acelerar el render y trabajar offline
+
+engine: knitr    # permite mezclar chunks {r} y {python} en el mismo .qmd vía reticulate
