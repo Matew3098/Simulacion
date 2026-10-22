@@ -9,6 +9,8 @@ editor: visual
 
 ## Sheldon Ross Capítulo 3
 
+#### Ejercicio 2
+
 2.  Si $x_0 = 3$ y $x_n=(5x_{n-1}+7 ) \hspace{2mm} mod \hspace{2mm}200$, determinar $x_1,x_2,...,x_{10}$
 
 ```{r}
@@ -22,6 +24,8 @@ for (i in 1:(n)) {
 
 cat('La lista de 10 números pseudoaleatorios es:', x[-1])
 ```
+
+#### Ejercicio 4
 
 4.  Aproximar $$\int_{0}^{1} (1-x^2)^{3/2} \, dx$$ mediante simulación
 
@@ -47,7 +51,9 @@ cat('La lista de 10 números pseudoaleatorios es:', x[-1])
 
     Valor real: $$\frac{3\pi}{16} \approx 0.58904 $$
 
-5.  Aproximar $$\int_{0}^{\infty}x(1+x^2)^{-2}dx$$ mediante simulación.
+#### Ejercicio 6
+
+6.  Aproximar $$\int_{0}^{\infty}x(1+x^2)^{-2}dx$$ mediante simulación.
 
     ```{r}
     f <- function(u) {
@@ -69,6 +75,8 @@ cat('La lista de 10 números pseudoaleatorios es:', x[-1])
     ```
 
 Valor real: $0.5$
+
+#### Ejercicio 9
 
 9.  Aproximar $$\int_{0}^{\infty}\int_{0}^{x}e^{-(x+y)}dydx$$
 
@@ -101,6 +109,8 @@ valor_real <- 1/2
 cat('La aproximación de la integral es:', aprox, '\n')
 cat('El error absoluto es:', abs(valor_real - aprox), '\n')
 ```
+
+#### Ejercicio 11
 
 11. Sea $U$ uniforme en $(0,1)$ . Utilice simulación para aproximar lo siguiente:
 
@@ -137,7 +147,7 @@ cat('El error absoluto es:', abs(valor_real - aprox), '\n')
     cat('La covarianza es :',covarianza(u_cuadrado,v), 'y el valor teórico es:',-pi/48)
     ```
 
-<!-- -->
+#### Ejercicio 13
 
 13. Sea $U_i, i \geq 1$ números aleatorios. Defina N como $$N = Máximo\{n:\prod_{i=1}^{n} Ui \geq e^{-3}\} $$ donde $\prod_{i=1}^{0} Ui =1$
 

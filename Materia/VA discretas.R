@@ -83,3 +83,34 @@ hist(res,
      col = "lightblue", 
      border = "white")
 
+# Distribucion binomial
+# Input n, p
+
+db <- function(n, p) {
+  U <- runif(1)
+  c <- p / (1 - p)
+  pr <- (1 - p)^n
+  i <- 0
+  Fx <- pr
+
+  while (U > Fx && i < n) {
+    pr <- (c * (n - i) / (i + 1)) * pr
+    Fx <- Fx + pr
+    i <- i + 1
+  }
+
+  return(i)
+}
+
+res <- replicate(1000000, db(n = 10, p = 0.04))
+mean(res)
+var(res)
+hist(
+  res,
+  breaks = seq(-0.5, 100.5, by = 1),
+  main = "Histograma de la distribución binomial",
+  xlab = "Valores de X",
+  ylab = "Frecuencia",
+  col = "#40E0D0",
+  border = "white"
+)
