@@ -56,3 +56,30 @@ val_teoricos <- rgeom(n = n1, prob = 1 - 0.37) + 1
 # 4. Test de Kolmogorov-Smirnov
 ks_resultado <- ks.test(res, val_teoricos)
 print(ks_resultado)
+
+# Generacion de variable Poisson
+# Input: lambda
+
+dp <- function(lambda){
+  U <- runif(1)
+  i <- 0
+  p <- exp(-lambda)
+  Fx <- p
+  while(U>= Fx){
+    p <- lambda*p/(i+1)
+    Fx <- Fx + p
+    i <- i + 1
+  }
+  return(i)
+}
+
+res <- replicate(1000000,dp(lambda=4))
+mean(res)
+var(res)
+hist(res, 
+     main = "Histograma de la distribución de Poisson (lambda = 4)", 
+     xlab = "Valores (i)", 
+     ylab = "Frecuencia", 
+     col = "lightblue", 
+     border = "white")
+
