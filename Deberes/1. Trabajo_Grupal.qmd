@@ -1,0 +1,237 @@
+---
+title: "Deber de Simulación"
+author: "Mateo Cardenas, Milena Palacios"
+---
+
+## Ejercicio 1
+
+Escriba un progama para generar n valores a partir de la función de masa de probabilidad $p_1 = 1/3$, $p_2 = 2/3$.
+
+a\) Sea $n =100$, ejecute el programa y determine la proporción de valores que sean iguales a 1.
+
+```{r}
+n <- 100
+ej1 <- function(n)
+{
+  res <- numeric(n)
+  for(i in 1:n)
+  {
+    res[i] <- sample(c(1,2), 1, replace= TRUE, prob = c(1/3, 2/3))
+  }
+  return(mean(res==1))
+}
+cat("Resultado:",ej1(n))
+```
+
+b\) Repita a) con $n=1000$
+
+```{r}
+n <- 1000
+cat("Resultado:",ej1(n))
+```
+
+c\) Repita a) con $n=10000$
+
+```{r}
+n <- 10000
+cat("Resultado:",ej1(n))
+```
+
+## Ejercicio 4
+
+Se baraja un conjutno de 100 cartas (numeradas del 1 al 100) y luego se voltean una a la vez. Decimos que ocurre un éxito si la carta $i$ es la $i$-ésima carta volteada $i=1,2,..$. Escriba un programa de simulación que estime la varianza y esperanza del número total de éxitos. Ejecute el programa. Determine las respuestas exactas y compárelas con sus estimaciones.
+
+```{r}
+generar_exp <- function(k){
+  return (replicate(k,sum(sample(1:100) == 1:100)))
+}
+prueba <- generar_exp(1000)
+media <- mean(prueba)
+print(media)
+varianza <- sum((prueba - media)^2)/length(prueba)
+print(varianza)
+```
+
+Por otro lado vemos que cada intento es una variable de Bernoulli por ello la media de la variable aleatoria será la suma de 100 variables Bernoulli $B_i$ de parametro $p=\frac{1}{100}$ por ello $\mathbb{E}[X] =\sum_{i=1}^{100} \mathbb{E}[B_i] =\sum_{i=1}^{100}\frac{1}{100} = 1$. Por otro lado las variables no son independientes, sacar una carta depende de las previas por ello calculamos su covarianza: ${Cov}(B_i, B_j) = \mathbb{E}[I_i I_j] - \mathbb{E}[I_i]\mathbb{E}[I_j] = \frac{1}{100 \times 99} - \left(\frac{1}{100}\right)^2$ Entonces la varianza es $$\operatorname{Var}(X) = \sum_{i=1}^{100} \operatorname{Var}(I_i) + \sum_{i \neq j} {Cov}(I_i, I_j) = 100\left(\frac{1}{100}\right)\left(\frac{99}{100}\right) + 100(99)\left(\frac{1}{9900} - \frac{1}{10000}\right) = 0.99 + 0.01 = 1$$
+
+## Ejercicio 7
+
+Se lanza de manera continua un par de dados legales, hasta que todos los posibles resultados 2,3,..., 12 hayan aparecido al menos una vez. Desarrolle un estudio de simulación para estimar el número esperado de lanzamientos necesarios.
+
+```{r}
+dados <- c(1,2,3,4,5,6)
+probabilidades <- c(1/6,1/6,1/6,1/6,1/6,1/6)
+
+lanz_esperados <- function(dados, probabilidades)
+{
+  aux <- c(0) # Vector auxiliar que tendra la suma de los dados
+  i <- 0
+  while(length(aux)!=12){
+    res <- sample(dados, 2, replace = TRUE, prob = probabilidades)  # Resultado del lanzamiento
+    aux <- union(aux, sum(res)) # Se appendea la suma de los dados
+    i <- i +1 # Lanzamiento realizado
+  }
+  return(i)  # Retorna el instante en el que han aparecido todas las posibles sumas al menos una vez
+}
+
+res <- sapply(1:1000, function(k){
+  lanz_esperados(dados, probabilidades)
+})
+cat("Numero esperado de lanzamientos:",mean(res))
+```
+
+## Ejercicio 10
+
+La función de masa de probabilidad binomial negativa con parámetros $(r,p)$ donde $r$ es un entero positivo y $0 < p < 1$, está dada por $$p_j = \frac{(j-1)!}{(j-r)!(r-1)!}p^r(1-p)^{j-r}, \ j=r,r+1,...$$
+
+a\) Por medio de la relación entre variables aleatorias binomial negativa y geométrica y los resultados del ejemplo 4d obtenga un algoritmo de simulación de esta distribución.
+
+```{r}
+# Dada la relación de la binomial negativa como la suma de r distribuciones geométricas
+geom <- function(p){
+    u <- runif(1)
+    return(floor(log(u)/log(1-p))+1)
+}
+bin_neg_0 <- function(r,p){
+    return(sum(replicate(r,geom(p))))
+}
+hist(replicate(10000,bin_neg_0(10,0.4)))
+```
+
+b\) Verifique la relación
+
+Dado que $p_{j+1}=\frac{(j)!}{(j+1-r)!(r-1)!}p^r(1-p)^{j+1-r}$ entonces agrupamos de la forma $p_{j+1}=\frac{j(1-p)}{(j+1-r)}\frac{(j+1)!}{(j-r)!(r-1)!}p^r(1-p)^{j-r}$ entonces
+
+$p_{j+1}=\frac{j(1-p)}{(j+1-r)}p_j$
+
+c\) Utilice la relación de la parte (b) para dar otro algoritmo que genere variables aleatorias binomiales negativas.
+
+```{r}
+bin_neg <- function(r, p) { # Uso la relación previa encontrada
+  U <- runif(1)
+  q <- 1 - p
+  pr <- p^r
+  j <- r
+  Fx <- pr
+
+  while (U > Fx && Fx < 1) {
+    pr <- (q * j / (j - r + 1)) * pr
+    Fx <- Fx + pr
+    j <- j + 1
+  }
+
+  return(j)
+}
+hist(replicate(10000,bin_neg(10,0.4)))
+```
+
+d\) Utilice la interpretación de la distribución binomial negativa como el número de ensayos necesarios para acumular un total de r éxitos cuando cada ensayo tiene éxito de manera independiente con porbabilidad p, para obtener otro método para generar la variable aleatoria
+
+```{r}
+bin_neg_conteo <- function(r,p){ # Cuento la cantidad de intentos hasta conseguir todos los éxitos
+    intentos <- 0
+    exitos <- 0
+    while(exitos<r){
+        intentos <- intentos + 1
+        if (runif(1)<p){ # Generando una Bernoulli
+            exitos <- exitos +1
+        }
+    }
+    return(intentos)
+}
+```
+
+## Ejercicio 13
+
+Sea X una variable aleatoria binomial con parámetros n y p. Suponga que queremos generar una variable aleatoria Y cuya función de masa de probabilidad es igual a la función de masa condicional de X dado que $X\ge k$ para alguna $k\le n$. Sea $\alpha = P(X\ge k)$ y suponga que se ha calculado el valor de $\alpha$.
+
+a\) Dé el método de la transformada inversa para generar Y.
+
+Notemos que $F_Y(y) = P(Y\le y) = P(X\le y|X\ge k) = \frac{P(X\le y,X\ge k)}{P(X\ge k)}=\frac{P(k\le X\le y)}{\alpha}=\frac{1}{\alpha}(F_X(y) - F_X(k-1))$
+
+de donde, debemos verificar que $U<F_Y(y)$ y por tanto
+
+$U<\frac{1}{\alpha}(F_X(y) - F_X(k-1))\equiv \alpha U + F_X(k-1) < F_X(y)\equiv U_1 < F_X(y)$
+
+```{r}
+n <- 10
+p <- 0.4
+k <- 4
+alpha <- 1 - pbinom(k - 1, size = n, prob = p)
+Y1<-function(n,p,k,alpha){
+  U1 <- alpha*runif(1) + pbinom(k-1,n,p)
+  for(y in k:n){
+    if(U1 < pbinom(y,n,p)){
+      return(y)
+    }
+  }
+}
+Y1(n, p, k, alpha)
+```
+
+b\) Dé otro método para generar Y
+
+Usaremos el Método de Aceptación y Rechazo. Para ello notemos que
+
+$P(Y = y) = P(X= y| X\ge k) = \frac{P(X= y, X\ge k)}{P(X\ge k)} = \frac{1}{\alpha}P(X= y)$
+
+Tomaremos $q_X = P(X = x)$ como distribución de referencia, además conocemos los valores de $p_X = q_X / \alpha$ para $X\ge y$
+
+```{r}
+# Método de Aceptación y Rechazo
+Y_vals <- k:n
+probsX <- dbinom(Y_vals, n, p)
+probsY <- probsX/alpha
+cc <<- max(probsY/probsX)   # Este valor sera 1/alpha
+
+# Simulacion de una variable binomial
+db <- function(n,p){
+  U <- runif(1)
+  ca <- p/(1-p)
+  i <- 0
+  pr <- (1-p)^n
+  Fx <- pr
+  while(U>= Fx)
+  {
+    pr <- ca*(n-i)/(i+1)*pr
+    Fx <- Fx + pr
+    i <- i + 1
+  }
+  return(i)
+}
+
+# Ejercicio
+Y2 <- function(n, p, k) {
+  repeat{
+  val_X <-db (n,p)  # Simulacion de la variable referencia
+  px <- if (val_X >= k) dbinom(val_X, size = n, prob = p) / alpha else 0 # distribucion que quiero
+  qx <- dbinom(val_X, size = n, prob = p) # distribucion referencia
+    if(runif(1) < px/(cc*qx))
+    {
+      return(val_X)
+    }
+  }
+}
+Y2(n, p, k)
+```
+
+c\) ¿Para qué valores de $\alpha$, pequeños o grandes, sería ineficiente el algoritmo en b)?
+
+El método de aceptación y rechazo no funcionaría para valores de $\alpha$ cercanos a 0. Pues la probabilidad de aceptar un valor simulado es muy baja,lo que obligaría a repetir el ciclo demasiadas veces y el costo computacional incrementaría significativamente. Si $\alpha$ es muy cercana a 1 la distribución se vuelve muy extendida y se aceptarían demasiados valores, por lo que los calculos se pueden ver afectados.
+
+## Ejercicio 16
+
+Presente un método para generar el valor de $X$, en el que $$P\{X=j\}= (\frac{1}{2})^{j+1}+\frac{(\frac{1}{2})2^{j-1}}{3^j}$$
+
+Dado que es la suma de 2 variables aleatorias $P\{X=j\}= \frac{1}{2}(\frac{1}{2})^{j}+\frac{1}{2}\frac{1}{3}(\frac{2}{3})^{j}$ notamos que ambas son distribuciones geométricas de parámetro 1/2 y 1/3 respectivamente por tanto usamos el método de composición para elegir cual usar según el valor que aparezca, en lugar de ponderar la suma con 1/2 a cada término decido usar un if-else que segun sea el caso utilice una parte de la expresión u otra siendo la idea la misma pero evitando llamar 2 veces a la función y generando resultados identicos.
+
+```{r}
+ dist_X <- function() {
+     if (runif(1) < 0.5) {
+         return(geom(1/2))
+      } else {
+          return(geom (1/3))
+      }
+  }
+ hist(replicate(10000,dist_X()))
+```
