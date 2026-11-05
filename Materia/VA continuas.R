@@ -181,7 +181,7 @@ normal_polar <- function(){
   if(S<=1){
     X <- sqrt((-2*log(S))/S)*V1
     Y <- sqrt((-2*log(S))/S)*V2
-    return(c(NA,NA))
+    return(c(X,Y))
   } else {
     return(c(NA,NA))
   }
