@@ -28,8 +28,37 @@ server <- function(input, output, session) {
 
     # Pestaña 2: Integración de Montecarlo
     integrar_montecarlo <- function(expr_str, a, b, N) {
-        # TODO: Evaluar f(x), puntos uniformes U(a, b), estimación, error estándar y convergencia
-        return(NULL)
+        f <- tryCatch(
+            {
+                eval(parse(text = paste("function(x) {", expr_str, "}")))
+            },
+            error = function(e) {
+                return(NULL)
+            }
+        )
+
+        if (!is.null(f)) {
+            a <- input$mc_a
+            b <- input$mc_b
+            N <- input$mc_N
+
+            U <- runif(N)
+            x <- a + (b - a) * U
+            y <- f(x)
+
+            int_estimada <- mean(y) * (b - a)
+            int_real <- tryCatch(integrate(f, lower = a, upper = b))
+            evolucion <- cumsum(x) / (1:N)
+        }
+
+        return(
+            x_sim = x_sim,
+            y_sim = y_sim,
+            est_integral = est_integral,
+            error_std = error_std,
+            ref = ref,
+            conv_estimates = conv_estimates
+        )
     }
 
     # Pestaña 3: Variables Aleatorias Discretas
