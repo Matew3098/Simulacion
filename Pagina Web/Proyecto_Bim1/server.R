@@ -44,21 +44,38 @@ server <- function(input, output, session) {
 
             U <- runif(N)
             x <- a + (b - a) * U
-            y <- f(x)
+            y <- tryCatch(f(x), error = function(e) NULL)
+
+            if (is.null(y)) {
+                return(list(
+                    valido = FALSE,
+                    mensaje = "La función ingresada no es válida. Verifica su expresión."
+                ))
+            }
 
             int_estimada <- mean(y) * (b - a)
-            int_real <- tryCatch(integrate(f, lower = a, upper = b))
-            evolucion <- cumsum(x) / (1:N)
+            int_real <- tryCatch(
+                integrate(f, lower = a, upper = b)$value,
+                error = function(e) NA
+            )
+            evolucion <- (b - a) * cumsum(y) / (1:N)
         }
 
-        return(
-            x_sim = x_sim,
-            y_sim = y_sim,
-            est_integral = est_integral,
-            error_std = error_std,
-            ref = ref,
-            conv_estimates = conv_estimates
-        )
+        return(list(
+            valido = TRUE,
+            mensaje = NULL,
+            expr_str = expr_str,
+            a = a,
+            b = b,
+            N = N,
+            f = f,
+            x_sim = x,
+            y_sim = y,
+            int_estimada = int_estimada,
+            error_std = abs(int_estimada - int_real),
+            ref = int_real,
+            conv_estimates = evolucion
+        ))
     }
 
     # Pestaña 3: Variables Aleatorias Discretas
@@ -92,8 +109,25 @@ server <- function(input, output, session) {
 
     # Reactivo Pestaña 2: Montecarlo
     datos_montecarlo <- eventReactive(input$mc_calcular, {
-        # req(input$mc_funcion, input$mc_a, input$mc_b, input$mc_N)
-        return(NULL)
+        req(input$mc_funcion, input$mc_a, input$mc_b, input$mc_N) # Verficicamos que tengamos desde el ui los datos necesarios para ejecutar ls simulación
+        res <- integrar_montecarlo(
+            # Con los datos validados ejecuto la expresión
+            expr_str = input$mc_funcion,
+            a = input$mc_a,
+            b = input$mc_b,
+            N = input$mc_N
+        )
+        validate(
+            need(
+                !is.null(res) && isTRUE(res$valido),
+                if (is.null(res)) {
+                    "No se pudo ejecutar la simulación."
+                } else {
+                    res$mensaje
+                }
+            )
+        )
+        return(res)
     })
 
     # Reactivo Pestaña 3: Variables Discretas
@@ -161,21 +195,41 @@ server <- function(input, output, session) {
     # =========================================================================
 
     output$mc_plot_geom <- renderPlot({
-        # res <- datos_montecarlo()
-        # req(res)
-        # TODO: Gráfico geométrico de f(x) evaluando puntos aleatorios
+        res <- datos_montecarlo()
+        req(res)
+        plot(
+            res$x_sim,
+            res$y_sim,
+            type = 'p',
+            col = '#d7a87c',
+            pch = 16,
+            xlab = "X",
+            ylab = "f(X)",
+            main = "Simulación Monte Carlo"
+        )
     })
 
     output$mc_plot_conv <- renderPlot({
-        # res <- datos_montecarlo()
-        # req(res)
-        # TODO: Gráfico de convergencia a medida que aumenta N
+        res <- datos_montecarlo()
+        req(res)
+        plot(
+            1:res$N,
+            res$conv_estimates,
+            type = "l",
+            col = '#4a646c',
+            xlab = 'Numero de simulaciones',
+            ylab = 'Acumulado de la integral',
+            main = 'Evolución de la integral',
+        )
+        abline(h = res$ref, col = '#c0a7de')
     })
 
     output$mc_resultados <- renderPrint({
-        # res <- datos_montecarlo()
-        # req(res)
-        # TODO: Valor aproximado, error estándar y comparación con integración numérica
+        res <- datos_montecarlo()
+        req(res)
+        cat('El valor aproximado es: ', res$int_estimada, '\n')
+        cat('El error estandar es: ', res$error_std, '\n')
+        cat('EL valor real es', res$ref, '\n')
     })
 
     # =========================================================================
