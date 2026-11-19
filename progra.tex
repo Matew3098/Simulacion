@@ -1,0 +1,45 @@
+\documentclass[11s,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{hyperref}
+
+\title{\textbf{Optimización Estocástica para Redes de Telecomunicaciones}}
+\author{Proyecto de Implementación Entera}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Resumen}
+Este proyecto busca ayudar a una empresa de telecomunicaciones a ubicar su infraestructura (como antenas y servidores) de la mejor manera posible, enfrentando la incertidumbre de cuánta demanda tendrán los usuarios en las horas pico. El objetivo es lograr una cobertura del $95\%$ al menor costo posible.
+
+\section{Definición del Problema}
+\begin{itemize}
+\item \textbf{El dilema:} Invertir en infraestructura es costoso y debe hacerse antes de saber qué consumo real tendrán los clientes.
+\item \textbf{La incertidumbre:} El uso de internet cambia según la zona, el horario y eventos inesperados.
+\item \textbf{La exigencia:} El sistema debe funcionar muy bien durante las horas pico.
+\end{itemize}
+
+\section{Objetivo General}
+Diseñar un modelo para elegir dónde ubicar la infraestructura y cómo enrutar los datos, asegurando que al menos el $95\%$ de la demanda en horas pico quede satisfecha a pesar de la incertidumbre.
+
+\section{Metodo de 2 etapas}
+\begin{enumerate}
+\item \textbf{Primera Etapa:} Se decide en qué sitios invertir y construir la infraestructura antes de conocer la demanda real.
+\item \textbf{Revelación de la demanda:} Se manifiesta el comportamiento real de los usuarios mediante escenarios probabilísticos.
+\item \textbf{Segunda Etapa:} Con la red ya construida, se optimiza el envío de datos para minimizar costos y penalizaciones por falta de cobertura.
+\item \textbf{Criterio del $95\%$:} Se acepta un déficit máximo del $5\%$ en momentos pico extremos para evitar inversiones excesivas e innecesarias.
+\end{enumerate}
+
+\section{Fases del Proyecto}
+\begin{itemize}
+\item \textbf{Fase 1:} Analizar el tráfico histórico y crear escenarios de demanda.
+\item \textbf{Fase 2:} Mapear posibles ubicaciones y calcular costos de instalación.
+\item \textbf{Fase 3:} Diseñar la red lógica y las reglas de enrutamiento de datos.
+\item \textbf{Fase 4:} Simular la red y validar que se cumpla la cobertura al menos el $95\%$.
+\end{itemize}
+
+\end{document}
