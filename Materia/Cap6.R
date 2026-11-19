@@ -69,9 +69,61 @@ sles1s <- function(TT){
   }
   return(list(TiemposArribo=A, TiemposSalida=D,TiempoExtra=Tp,Espera=ESS,Eventos=eventos))
 }
+
 set.seed(12345)
 res <- sles1s(TT=50)
 espera <- res$Espera
 eventos <- res$Eventos
 plot(eventos,espera,type='s',col='red')
 abline(v=50)
+
+
+# Sistema de linea de espera con dos servidores en serie
+sle2s <- function(TT){
+  t <- NNA <- NND <- 0
+  A1 <- A2 <- D <- 0
+  ES <- c(0,0)
+  TA <- Tllegada()
+  T1 <- T2 <- Inf
+  while(t <= TT || min(ES) > 0){
+    # Caso 1
+    if(TA == min(TA, T1, T2)){
+      t <- TA
+      ES[1] <- ES[1] + 1
+      TA <- t + Tllegada()
+      if(ES[1] == 1){
+        T1 <- t + Tservicio()
+      }
+      A1[NNA] <- t
+    }
+    # Caso 2
+    if(T1 == min(TA, T1, T2)){
+      t <- T1
+      ES[1] <- ES[1] - 1
+      ES[2] <- ES[2] + 1
+      if(ES[1] == 0){
+        T1 <- Inf
+      } else {
+        T1 <- t + Tservicio()
+      }
+      if(ES[2] == 1){
+        T2 <- Tservicio()
+      }
+      A2 [NNA- ES[1]] <- t
+    }
+    # Caso 3
+    if(T2 == min(T1, T2, TA)){
+      t <- T2
+      NND <- NND + 1
+      ES[2] <- ES[2] - 1
+      if(ES[2] == 0){
+        T2 <- Inf
+      } else {
+        T2 <- t + Tservicio()
+      }
+      D[NND] <- t 
+    }
+  }
+  return(list(ArriboS1 = A1, ArriboS2 = A2, Salidas = D))
+}
+sle2s(TT=50)
